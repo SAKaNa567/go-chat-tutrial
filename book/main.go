@@ -1,11 +1,15 @@
 package main
 
 import (
-    "log"
     "net/http"
     "sync"
     "text/template"
    "path/filepath"
+
+    //"flag"
+   // "os"
+    "log"
+    //"github.com/trace"
 )
 //tmp1は１つのテンプレートを表します
 type templateHandler struct {
@@ -20,7 +24,7 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
             template.Must(template.ParseFiles(filepath.Join("templates",
                 t.filename)))
             })
-            t.templ.Execute(w,nil)
+            t.templ.Execute(w,r)
     }
 
 
@@ -38,14 +42,34 @@ func main() {
 //                    `))
 //                })
 //
+
 // /       //webサーバを開始します。
 //        if err := http.ListenAndServe(":8080",nil); err != nil {
 //            log.Fatal("ListenAndServe:",err)
  //       }
-    http.Handle("/",&templateHandler{filename: "chat.html"})
-    //web サーバを開始します
-    if err := http.ListenAndServe(":8080",nil); err != nil {
-        log.Fatal("ListenAndServe:", err )
-    }
+ //
+ //   http.Handle("/",&templateHandler{filename: "chat.html"})
+ //   //web サーバを開始します
+ //   if err := http.ListenAndServe(":8080",nil); err != nil {
+ //       log.Fatal("ListenAndServe:", err )
+ //   }
+
+ //var addr = flag.String("addr",":8080","The addr of the application")
+ //flag.Parse() //parse the flags
+
+ r := newRoom()
+ //r.tracer = trace.New(os.Stdout)
+
+ http.Handle("/",&templateHandler{filename:"chat.html"})
+ http.Handle("/room",r)
+
+ //get the room going
+ go r.run()
+
+ //start the web server
+ //log.Println("Starting web server on ",*addr)
+ if err := http.ListenAndServe(":8080",nil); err != nil {
+     log.Fatal("ListenAndServe:",err)
+ }
 }
 
