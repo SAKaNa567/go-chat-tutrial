@@ -14,10 +14,10 @@ type client struct {
     room *room
 }
 
-func ( c *client ) read() {
+func ( c *client ) from_client() {
     for {
         if _, msg , err := c.socket.ReadMessage(); err == nil {
-            c.room.forward <- msg 
+            c.room.forward <- msg //フロントから送られて来たmsgをforwardへ送信する。
         }else{
             break
         }
@@ -25,9 +25,9 @@ func ( c *client ) read() {
     c.socket.Close()
 }
 
-func (c *client ) write() {
+func (c *client ) write() {//メッセージを書き込んでいます。 Goで実行されているために、c.sendが送信された瞬間にこのメソッドは実行されます。
     for msg := range c.send {
-        if err := c.socket.WriteMessage(websocket.TextMessage, msg);
+        if err := c.socket.WriteMessage(websocket.TextMessage, msg);//フロントへ書き込んでいます。
         err != nil {
             break
         }
