@@ -18,6 +18,7 @@ func ( c *client ) from_client() {
     for {
         if _, msg , err := c.socket.ReadMessage(); err == nil {
             c.room.forward <- msg //フロントから送られて来たmsgをforwardへ送信する。
+           // fmt.Printf("%v -> %v",c.room,msg)
         }else{
             break
         }
@@ -31,6 +32,7 @@ func (c *client ) write() {//メッセージを書き込んでいます。 Goで
         err != nil {
             break
         }
+        //fmt.Println(msg)
     }
     c.socket.Close()
 }

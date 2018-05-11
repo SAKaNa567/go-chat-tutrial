@@ -10,7 +10,9 @@ import (
    // "os"
     "log"
     //"github.com/trace"
+    "flag"
 )
+
 //tmp1は１つのテンプレートを表します
 type templateHandler struct {
     once sync.Once 
@@ -54,11 +56,11 @@ func main() {
  //       log.Fatal("ListenAndServe:", err )
  //   }
 
- //var addr = flag.String("addr",":8080","The addr of the application")
- //flag.Parse() //parse the flags
+ var addr = flag.String("addr",":8080","アプリケーションのアドレス")
+ flag.Parse() //parse the flags
 
  r := newRoom()
- //r.tracer = trace.New(os.Stdout)
+ //r.tracer = trace.New(os.Stdout) //tracer.offをしない状態でこの一行がないと異常終了となる。
 
  http.Handle("/",&templateHandler{filename:"chat.html"})
  http.Handle("/room",r)
@@ -67,9 +69,8 @@ func main() {
  go r.run()
 
  //start the web server
- //log.Println("Starting web server on ",*addr)
- if err := http.ListenAndServe(":8080",nil); err != nil {
+ log.Println("Starting web server on ",*addr)
+ if err := http.ListenAndServe(*addr,nil); err != nil {
      log.Fatal("ListenAndServe:",err)
  }
 }
-
