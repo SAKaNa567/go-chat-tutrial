@@ -5,12 +5,13 @@
 
       input { display: block; }
       ul    { list-style: none; }
-
+      #messages {background-color: darkseagreen;}
     </style>
   </head>
   <body>
 
     <ul id="messages"></ul>
+    <p id="time"></p>
     <form id="chatbox">
         {{.UserData.name}}:<br/>
       <textarea></textarea>
@@ -35,7 +36,9 @@
           }
 
           //socket.send(msgBox.val());
-          socket.send(JSON.stringify({"Message":msgBox.val()}));
+          socket.send(JSON.stringify({//send to server from textbox
+              "Message":msgBox.val(),
+          }));
           msgBox.val("");
           return false;
 
@@ -50,16 +53,19 @@
           }
 
 
-          socket.onmessage = function(e) {
+
+            socket.onmessage = function(e) {
               var msg = eval("("+e.data+")");
-              messages.append(
+              // var msg = $.parseJSON(e.data)
+                var d = new Date(msg.When);
+                messages.append(
                   $("<li>").append(
                       $("<strong>").text(msg.Name + ": "),
-                      $("<span>").text(msg.Message)
+                      $("<span>").text(msg.Message+ ": "),
+                      $("<span>").text(d.getMonth()+"/"+d.getDate()+"/"+d.getHours()+":"+d.getMinutes())
                   )
               );
           }
-
         }
 
       });
