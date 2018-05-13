@@ -5,11 +5,12 @@ import (
     "net/http"
     "log"
     "Web_Application_By_Go/voyage/learning-in-goldenweek/trace"
+    "github.com/stretchr/objx"
 )
 
 type room struct {
     //forwardは他のクライアントに転送するためのメッセージを保持するチャネルです
-    forward chan []byte
+    forward chan *message
     //joinはチャットルームに参加しようとしているクライアントのためのチャネルです
     join chan *client 
     //leave はチャットルームから退室しようとしているクライアントのためのチャネルです。
@@ -24,7 +25,7 @@ type room struct {
 //newRoomはすぐに利用できるチャットルームを生成して返します。
 func newRoom() *room{
     return &room{
-        forward: make(chan []byte),
+        forward: make(chan *message),
         join: make(chan *client),
         leave: make(chan *client),
         clients: make(map[*client]bool),
@@ -47,7 +48,7 @@ func (r *room) run() {
             r.tracer.Trace("クライアントが退室しました。")
         case msg := <- r.forward://受信
             //全てのクライアントにメッセージを転送
-            r.tracer.Trace("メッセージを受信しました。",string(msg))
+            r.tracer.Trace("メッセージを受信しました。",msg.Message)
             for client := range r.clients {
                 select {
                 case client.send <- msg://送信
@@ -78,11 +79,20 @@ func(r *room) ServeHTTP(w http.ResponseWriter, req *http.Request){
         log.Fatal("ServeHTTP:",err )
         return 
     }
+    authCookie, err := req.Cookie("auth")
+    if err != nil {
+        log.Fatal("クッキーの取得に失敗しました。:",err)
+        return
+    }
+
+
     client := &client{
         socket :socket,
-        send: make(chan []byte, messageBufferSize),
+        send: make(chan *message, messageBufferSize),
         room: r,
+        userData: objx.MustFromBase64(authCookie.Value),
     }
+
     r.join <- client//r.joinへ送信
     defer func() {r.leave <- client} ()//送信
     go client.write()

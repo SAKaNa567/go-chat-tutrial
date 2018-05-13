@@ -10,7 +10,7 @@ type client struct {
     //socketはこのクライアントのためのwebsocketです。
     socket *websocket.Conn
     //send はメッセージが送られるチャネルです。
-    send chan []byte
+    send chan *message
     //room はこのクライアントが参加しているチャットルーム
     room *room
     //usreDataはユーザーに関する情報を保持します。
